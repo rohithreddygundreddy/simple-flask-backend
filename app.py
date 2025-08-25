@@ -5,6 +5,7 @@ from datetime import timedelta
 import json
 import uuid
 import time
+import re
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -44,7 +45,9 @@ def home():
             'GET /profile': 'Get current user profile (requires token in Authorization header)'
         }
     })
-
+def is_valid_password(password):
+    pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+    return bool(re.match(pattern, password))
 @app.route('/register', methods=['POST'])
 def register():
     try:
@@ -58,9 +61,9 @@ def register():
             }), 400
         
         # Check password length
-        if len(data['password']) < 6:
+        if not is_valid_password(data['password']):
             return jsonify({
-                'message': 'Password must be at least 6 characters',
+                'message': 'Password must be at least 8 characters, number, uppercase, lowercase and special character',
                 'status': 'error'
             }), 400
         
