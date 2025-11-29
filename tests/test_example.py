@@ -1,0 +1,9 @@
+def test_sum():
+    assert 2+3==4
+def test_diff():
+    assert 2-1==1
+def test_mul():
+    assert 2*3!=5
+def test_divd():
+    assert 10//2==5
+    assert 10//2>4
