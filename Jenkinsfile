@@ -25,64 +25,69 @@ pipeline {
             }
         }
 
-
         stage('Install Dependencies') {
             steps {
-                bat 'pip install -r requirements.txt'
+                bat """
+                    pip install -r requirements.txt
+                """
             }
         }
 
         stage('Security Scan - Bandit') {
             steps {
-                bat 'pip install bandit'
-                bat 'bandit -r . || true'
+                bat """
+                    pip install bandit
+                    bandit -r . || echo "Bandit scan completed with warnings"
+                """
             }
         }
 
         stage('Code Quality - flake8') {
             steps {
-                bat 'pip install flake8'
-                bat 'flake8 . || true'
+                bat """
+                    pip install flake8
+                    flake8 . || echo "Flake8 warnings found"
+                """
             }
         }
 
         stage('Run Tests') {
             steps {
                 script {
-                    build()   // from your shared library
+                    build()    // Your shared library build.groovy
                 }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t backend-app .'
+                bat """
+                    docker build -t backend-app:%IMAGE_VERSION% .
+                    docker tag backend-app:%IMAGE_VERSION% backend-app:latest
+                """
             }
         }
 
         stage('Push Docker Image to DockerHub') {
             steps {
-                script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
-                        bat 'docker tag backend-app rohithreddy11/backend-app:latest'
-                        bat 'docker push rohithreddy11/backend-app:latest'
-                    }
-                }
+                bat """
+                    docker tag backend-app:%IMAGE_VERSION% rohithreddy11/backend-app:%IMAGE_VERSION%
+                    docker push rohithreddy11/backend-app:%IMAGE_VERSION%
+
+                    docker tag backend-app:%IMAGE_VERSION% rohithreddy11/backend-app:latest
+                    docker push rohithreddy11/backend-app:latest
+                """
             }
         }
 
         stage('Run Backend Container') {
             steps {
-                script {
-                    bat 'docker stop backend-app-container || true'
-                    bat 'docker rm backend-app-container || true'
-                    bat '''
-                        docker run -d \
-                        --name backend-app-container \
-                        -p 5000:5000 \
-                        rohithreddy11/backend-app:latest
-                    '''
-                }
+                bat """
+                    docker stop backend-app-container || echo "No running container"
+                    docker rm backend-app-container || echo "No container to remove"
+
+                    docker run -d --name backend-app-container -p 5000:5000 rohithreddy11/backend-app:%IMAGE_VERSION%
+                """
             }
         }
     }
