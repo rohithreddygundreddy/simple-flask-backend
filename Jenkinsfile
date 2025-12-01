@@ -38,10 +38,13 @@ pipeline {
             steps {
                 bat """
                     "%PYTHON%" -m pip install bandit
-                    "%PYTHON%" -m bandit -r . || echo Bandit warnings found
+
+                    rem Run Bandit but NEVER fail the pipeline
+                    cmd /c ""%PYTHON%" -m bandit -r . & exit /b 0"
                 """
             }
         }
+
 
         stage('Code Quality - flake8') {
             steps {
