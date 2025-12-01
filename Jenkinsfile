@@ -28,21 +28,21 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                bat 'pip install -r requirements.txt'
             }
         }
 
         stage('Security Scan - Bandit') {
             steps {
-                sh 'pip install bandit'
-                sh 'bandit -r . || true'
+                bat 'pip install bandit'
+                bat 'bandit -r . || true'
             }
         }
 
         stage('Code Quality - flake8') {
             steps {
-                sh 'pip install flake8'
-                sh 'flake8 . || true'
+                bat 'pip install flake8'
+                bat 'flake8 . || true'
             }
         }
 
@@ -56,7 +56,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t backend-app .'
+                bat 'docker build -t backend-app .'
             }
         }
 
@@ -64,8 +64,8 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub') {
-                        sh 'docker tag backend-app rohithreddy11/backend-app:latest'
-                        sh 'docker push rohithreddy11/backend-app:latest'
+                        bat 'docker tag backend-app rohithreddy11/backend-app:latest'
+                        bat 'docker push rohithreddy11/backend-app:latest'
                     }
                 }
             }
@@ -74,9 +74,9 @@ pipeline {
         stage('Run Backend Container') {
             steps {
                 script {
-                    sh 'docker stop backend-app-container || true'
-                    sh 'docker rm backend-app-container || true'
-                    sh '''
+                    bat 'docker stop backend-app-container || true'
+                    bat 'docker rm backend-app-container || true'
+                    bat '''
                         docker run -d \
                         --name backend-app-container \
                         -p 5000:5000 \
