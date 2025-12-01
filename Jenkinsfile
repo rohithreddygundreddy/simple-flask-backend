@@ -3,15 +3,28 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
+    environment {
+        IMAGE_VERSION = "${BUILD_NUMBER}"
+    }
+
     stages {
 
         stage('Checkout Code') {
             steps {
                 script {
-                    repo_checkout()
+                    repo_checkout(
+                        "git@github.com:rohithreddygundreddy/simple-flask-backend.git",
+                        "main",
+                        "ssh-key"
+                    )
                 }
             }
         }
+
 
         stage('Install Dependencies') {
             steps {
