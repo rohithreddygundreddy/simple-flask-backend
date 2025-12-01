@@ -3,13 +3,12 @@
 pipeline {
     agent any
 
-    options {
-        skipDefaultCheckout(true)
-    }
+    options { skipDefaultCheckout(true) }
 
     environment {
         PYTHON = "C:\\Users\\srija\\AppData\\Local\\Programs\\Python\\Python314\\python.exe"
         IMAGE_VERSION = "${BUILD_NUMBER}"
+        DOCKERHUB_USER = "rohithreddy11"
     }
 
     stages {
@@ -38,20 +37,15 @@ pipeline {
             steps {
                 bat """
                     "%PYTHON%" -m pip install bandit
-
-                    rem Run Bandit but NEVER fail the pipeline
                     cmd /c ""%PYTHON%" -m bandit -r . & exit /b 0"
                 """
             }
         }
 
-
         stage('Code Quality - flake8') {
             steps {
                 bat """
                     "%PYTHON%" -m pip install flake8
-
-                    rem Run flake8 but NEVER fail the pipeline
                     cmd /c ""%PYTHON%" -m flake8 . & exit /b 0"
                 """
             }
@@ -60,7 +54,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    build()   // from shared library (uses full Python path)
+                    build()
                 }
             }
         }
@@ -77,11 +71,11 @@ pipeline {
         stage('Push Docker Image to DockerHub') {
             steps {
                 bat """
-                    docker tag backend-app:%IMAGE_VERSION% rohithreddy11/backend-app:%IMAGE_VERSION%
-                    docker push rohithreddy11/backend-app:%IMAGE_VERSION%
+                    docker tag backend-app:%IMAGE_VERSION% %DOCKERHUB_USER%/backend-app:%IMAGE_VERSION%
+                    docker push %DOCKERHUB_USER%/backend-app:%IMAGE_VERSION%
 
-                    docker tag backend-app:%IMAGE_VERSION% rohithreddy11/backend-app:latest
-                    docker push rohithreddy11/backend-app:latest
+                    docker tag backend-app:%IMAGE_VERSION% %DOCKERHUB_USER%/backend-app:latest
+                    docker push %DOCKERHUB_USER%/backend-app:latest
                 """
             }
         }
@@ -92,7 +86,7 @@ pipeline {
                     docker stop backend-app-container || echo No container
                     docker rm backend-app-container || echo No container
 
-                    docker run -d --name backend-app-container -p 5000:5000 rohithreddy11/backend-app:%IMAGE_VERSION%
+                    docker run -d --name backend-app-container -p 5000:5000 %DOCKERHUB_USER%/backend-app:%IMAGE_VERSION%
                 """
             }
         }
