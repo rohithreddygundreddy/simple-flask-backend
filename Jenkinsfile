@@ -28,7 +28,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 bat """
-                    pip install -r requirements.txt
+                    py -m pip install -r requirements.txt
                 """
             }
         }
@@ -36,7 +36,7 @@ pipeline {
         stage('Security Scan - Bandit') {
             steps {
                 bat """
-                    pip install bandit
+                    py -m pip install bandit
                     bandit -r . || echo "Bandit scan completed with warnings"
                 """
             }
@@ -45,7 +45,7 @@ pipeline {
         stage('Code Quality - flake8') {
             steps {
                 bat """
-                    pip install flake8
+                    py -m pip install flake8
                     flake8 . || echo "Flake8 warnings found"
                 """
             }
