@@ -50,7 +50,9 @@ pipeline {
             steps {
                 bat """
                     "%PYTHON%" -m pip install flake8
-                    "%PYTHON%" -m flake8 . || echo flake8 warnings found
+
+                    rem Run flake8 but NEVER fail the pipeline
+                    cmd /c ""%PYTHON%" -m flake8 . & exit /b 0"
                 """
             }
         }
