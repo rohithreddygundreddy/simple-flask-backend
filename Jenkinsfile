@@ -8,6 +8,7 @@ pipeline {
     }
 
     environment {
+        PYTHON = "C:\\Users\\srija\\AppData\\Local\\Programs\\Python\\Python314\\python.exe"
         IMAGE_VERSION = "${BUILD_NUMBER}"
     }
 
@@ -28,7 +29,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 bat """
-                    py -m pip install -r requirements.txt
+                    "%PYTHON%" -m pip install -r requirements.txt
                 """
             }
         }
@@ -36,8 +37,8 @@ pipeline {
         stage('Security Scan - Bandit') {
             steps {
                 bat """
-                    py -m pip install bandit
-                    bandit -r . || echo "Bandit scan completed with warnings"
+                    "%PYTHON%" -m pip install bandit
+                    "%PYTHON%" -m bandit -r . || echo Bandit warnings found
                 """
             }
         }
@@ -45,8 +46,8 @@ pipeline {
         stage('Code Quality - flake8') {
             steps {
                 bat """
-                    py -m pip install flake8
-                    flake8 . || echo "Flake8 warnings found"
+                    "%PYTHON%" -m pip install flake8
+                    "%PYTHON%" -m flake8 . || echo flake8 warnings found
                 """
             }
         }
@@ -54,7 +55,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    build()    // Your shared library build.groovy
+                    build()   // from shared library (uses full Python path)
                 }
             }
         }
@@ -83,8 +84,8 @@ pipeline {
         stage('Run Backend Container') {
             steps {
                 bat """
-                    docker stop backend-app-container || echo "No running container"
-                    docker rm backend-app-container || echo "No container to remove"
+                    docker stop backend-app-container || echo No container
+                    docker rm backend-app-container || echo No container
 
                     docker run -d --name backend-app-container -p 5000:5000 rohithreddy11/backend-app:%IMAGE_VERSION%
                 """
